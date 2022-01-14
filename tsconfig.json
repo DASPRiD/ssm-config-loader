@@ -1,0 +1,17 @@
+{
+    "extends": "@tsconfig/node14/tsconfig.json",
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "importsNotUsedAsValues": "error",
+        "sourceMap": true,
+        "declaration": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "outDir": "lib"
+    },
+    "include": [
+        "src/**/*",
+        "test/**/*"
+    ]
+}

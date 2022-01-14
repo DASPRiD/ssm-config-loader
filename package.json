@@ -1,0 +1,61 @@
+{
+  "name": "ssm-config-loader",
+  "version": "1.0.0",
+  "description": "Load configuration from SSM Parameter Store with local fallback",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DASPRiD/ssm-config-loader.git"
+  },
+  "scripts": {
+    "build": "rimraf ./lib && tsc -p tsconfig.build.json",
+    "coverage": "nyc npm test",
+    "test": "mocha -r ts-node/register test/**/*.ts",
+    "test:ci": "nyc --reporter=lcov npm test",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "prepare": "husky install",
+    "prepublishOnly": "npm test && npm run lint && npm build",
+    "preversion": "npm run lint",
+    "version": "npm run lint:fix && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "SSM",
+    "Parameter",
+    "Store",
+    "Config"
+  ],
+  "author": "Ben Scholzen 'DASPRiD'",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "@tsconfig/node14": "^1.0.1",
+    "@types/chai": "^4.3.0",
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^14.18.5",
+    "@types/sinon": "^10.0.6",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^8.6.0",
+    "eslint-config-dasprid": "^0.1.3",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.1.7",
+    "mocha": "^9.1.3",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^12.0.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-ssm": "^3.46.0"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix"
+  }
+}
