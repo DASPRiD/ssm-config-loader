@@ -33,6 +33,7 @@
   "author": "Ben Scholzen 'DASPRiD'",
   "license": "BSD-2-Clause",
   "devDependencies": {
+    "@aws-sdk/client-ssm": "^3.46.0",
     "@tsconfig/node14": "^1.0.1",
     "@types/chai": "^4.3.0",
     "@types/chai-as-promised": "^7.1.4",
