@@ -16,8 +16,8 @@
     "coverage": "nyc npm test",
     "test": "mocha -r ts-node/register test/**/*.ts",
     "test:ci": "nyc --reporter=lcov npm test",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
     "prepare": "husky install",
     "prepublishOnly": "npm test && npm run lint && npm run build",
     "preversion": "npm run lint",
@@ -51,12 +51,16 @@
     "rimraf": "^3.0.2",
     "sinon": "^12.0.1",
     "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "zod": "^3.11.6"
   },
   "peerDependencies": {
     "@aws-sdk/client-ssm": "^3.46.0"
   },
   "lint-staged": {
-    "*.js": "eslint --cache --fix"
+    "*.ts": "eslint --cache --fix"
+  },
+  "optionalDependencies": {
+    "zod": "^3.11.6"
   }
 }

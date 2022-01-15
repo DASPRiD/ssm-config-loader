@@ -1,13 +1,14 @@
-import {Parameter, SSM} from '@aws-sdk/client-ssm';
+import type {Parameter} from '@aws-sdk/client-ssm';
+import {SSM} from '@aws-sdk/client-ssm';
 import chai, {expect} from 'chai';
-import chaiAsPromised from 'chai-as-promised'
+import chaiAsPromised from 'chai-as-promised';
 import 'mocha';
 import {createSandbox} from 'sinon';
 import {loadSsmConfig} from '../src';
 
 chai.use(chaiAsPromised);
 
-describe('loadSsmConfig', () => {
+describe('index', () => {
     const sandbox = createSandbox();
 
     const createSsmStub = (parameters : Parameter[] | undefined) => {

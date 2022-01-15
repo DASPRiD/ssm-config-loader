@@ -86,3 +86,24 @@ export const getConfig = async () : Promise<Config> => {
     })();
 };
 ```
+
+## Convenience helper
+
+This library also comes with an opinionated convenience helper which will automatically create a singleton config getter
+with built-in schema validation via zod. This removes a lot of boilerplate code you have to write in your projects:
+
+```typescript
+import {SSM} from '@aws-sdk/client-ssm';
+import {createSingletonConfigGetter} from 'ssm-config-loader/lib/singleton-config-getter';
+import {z} from 'zod';
+
+const configSchema = z.object({
+    endpoint: z.string().url(),
+});
+
+export type Config = z.infer<typeof configSchema>;
+
+export const getConfig = createSingletonConfigGetter(new SSM({}), configSchema, process.env.SSM_PREFIX);
+```
+
+In case either loading the config or the validation fails, the getter will throw a `ConfigError` from the same file.
