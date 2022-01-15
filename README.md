@@ -103,7 +103,11 @@ const configSchema = z.object({
 
 export type Config = z.infer<typeof configSchema>;
 
-export const getConfig = createSingletonConfigGetter(new SSM({}), configSchema, process.env.SSM_PREFIX);
+export const getConfig = createSingletonConfigGetter(
+    new SSM({}),
+    configSchema,
+    process.env.SSM_PREFIX
+);
 ```
 
 In case either loading the config or the validation fails, the getter will throw a `ConfigError` from the same file.
