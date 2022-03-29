@@ -1,5 +1,5 @@
 import {SSM} from '@aws-sdk/client-ssm';
-import type {ZodType} from 'zod';
+import type z from 'zod';
 import {loadSsmConfig} from './index';
 
 export class ConfigError extends Error {
@@ -11,14 +11,14 @@ export class ConfigError extends Error {
     }
 }
 
-export const createSingletonConfigGetter = <T>(
+export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
     ssm : SSM,
-    schema : ZodType<T>,
+    schema : T,
     prefix ?: string
-) : () => Promise<T> => {
-    let configPromise : Promise<T> | undefined;
+) : () => Promise<z.infer<T>> => {
+    let configPromise : Promise<z.infer<T>> | undefined;
 
-    return async () : Promise<T> => {
+    return async () : Promise<z.infer<T>> => {
         if (configPromise) {
             return configPromise;
         }
