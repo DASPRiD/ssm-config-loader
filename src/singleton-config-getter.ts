@@ -6,6 +6,10 @@ export class ConfigError extends Error {
     public wrappedError ?: unknown;
 
     public constructor(message : string, wrappedError ?: unknown) {
+        if (wrappedError instanceof Error) {
+            message += `: ${wrappedError.message}`;
+        }
+
         super(message);
         this.wrappedError = wrappedError;
     }
