@@ -1,11 +1,11 @@
-import {SSM} from '@aws-sdk/client-ssm';
+import type { SSM } from '@aws-sdk/client-ssm';
 import type z from 'zod';
-import {loadSsmConfig} from './index';
+import { loadSsmConfig } from './index.js';
 
 export class ConfigError extends Error {
-    public wrappedError ?: unknown;
+    public wrappedError?: unknown;
 
-    public constructor(message : string, wrappedError ?: unknown) {
+    public constructor(message: string, wrappedError?: unknown) {
         if (wrappedError instanceof Error) {
             message += `: ${wrappedError.message}`;
         }
@@ -16,22 +16,22 @@ export class ConfigError extends Error {
 }
 
 export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
-    ssm : SSM,
-    schema : T,
-    prefix ?: string
-) : () => Promise<z.infer<T>> => {
-    let configPromise : Promise<z.infer<T>> | undefined;
+    ssm: SSM,
+    schema: T,
+    prefix?: string,
+): (() => Promise<z.infer<T>>) => {
+    let configPromise: Promise<z.infer<T>> | undefined;
 
-    return async () : Promise<z.infer<T>> => {
+    return async (): Promise<z.infer<T>> => {
         if (configPromise) {
             return configPromise;
         }
 
-        return configPromise = (async () => {
-            let rawConfig;
+        configPromise = (async () => {
+            let rawConfig: unknown;
 
             try {
-                rawConfig = await loadSsmConfig(new SSM({}), prefix);
+                rawConfig = await loadSsmConfig(ssm, prefix);
             } catch (error) {
                 throw new ConfigError('Config loading failed', error);
             }
@@ -42,5 +42,6 @@ export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
                 throw new ConfigError('Config validation failed', error);
             }
         })();
+        return configPromise;
     };
 };

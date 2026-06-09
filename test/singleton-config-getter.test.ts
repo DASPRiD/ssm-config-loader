@@ -1,12 +1,12 @@
-import {SSM} from '@aws-sdk/client-ssm';
-import chai, {expect} from 'chai';
+import { SSM } from '@aws-sdk/client-ssm';
+import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import 'mocha';
-import {createSandbox} from 'sinon';
-import {z} from 'zod';
-import {createSingletonConfigGetter} from '../src/singleton-config-getter';
+import { createSandbox } from 'sinon';
+import { z } from 'zod';
+import { createSingletonConfigGetter } from '../src/singleton-config-getter.js';
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 describe('singleton-config-getter', () => {
     const sandbox = createSandbox();
