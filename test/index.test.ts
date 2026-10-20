@@ -127,7 +127,7 @@ describe('index', () => {
     });
 
     it('should load config from file without provided prefix', async () => {
-        sandbox.stub(process, 'cwd').returns(__dirname);
+        sandbox.stub(process, 'cwd').returns(import.meta.dirname);
         const ssm = sandbox.createStubInstance(SSM);
 
         return expect(loadSsmConfig(ssm)).to.eventually.eql({

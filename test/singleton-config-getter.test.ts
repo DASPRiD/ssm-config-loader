@@ -27,7 +27,7 @@ describe('singleton-config-getter', () => {
     });
 
     it('should throw error when validation fails', async () => {
-        sandbox.stub(process, 'cwd').returns(__dirname);
+        sandbox.stub(process, 'cwd').returns(import.meta.dirname);
         const schema = z.object({
             foo: z.literal('invalid'),
         });
@@ -38,7 +38,7 @@ describe('singleton-config-getter', () => {
     });
 
     it('should return the same result when executed twice', async () => {
-        sandbox.stub(process, 'cwd').returns(__dirname);
+        sandbox.stub(process, 'cwd').returns(import.meta.dirname);
         const schema = z.object({
             foo: z.literal('bar'),
         });

@@ -94,7 +94,7 @@ with built-in schema validation via zod. This removes a lot of boilerplate code 
 
 ```typescript
 import {SSM} from '@aws-sdk/client-ssm';
-import {createSingletonConfigGetter} from 'ssm-config-loader/lib/singleton-config-getter';
+import {createSingletonConfigGetter} from 'ssm-config-loader/lib/singleton-config-getter.js';
 import {z} from 'zod';
 
 const configSchema = z.object({
