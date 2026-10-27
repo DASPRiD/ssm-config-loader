@@ -1,17 +1,14 @@
-import type { SSM } from '@aws-sdk/client-ssm';
-import type z from 'zod';
-import { loadSsmConfig } from './index.js';
+import type { SSM } from "@aws-sdk/client-ssm";
+import type z from "zod";
+import { loadSsmConfig } from "./index.js";
 
 export class ConfigError extends Error {
-    public wrappedError?: unknown;
-
-    public constructor(message: string, wrappedError?: unknown) {
-        if (wrappedError instanceof Error) {
-            message += `: ${wrappedError.message}`;
+    public constructor(message: string, cause?: unknown) {
+        if (cause instanceof Error) {
+            message += `: ${cause.message}`;
         }
 
-        super(message);
-        this.wrappedError = wrappedError;
+        super(message, { cause });
     }
 }
 
@@ -33,15 +30,18 @@ export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
             try {
                 rawConfig = await loadSsmConfig(ssm, prefix);
             } catch (error) {
-                throw new ConfigError('Config loading failed', error);
+                throw new ConfigError("Config loading failed", error);
             }
 
             try {
                 return schema.parse(rawConfig);
             } catch (error) {
-                throw new ConfigError('Config validation failed', error);
+                throw new ConfigError("Config validation failed", error);
             }
-        })();
+        })().catch((error: unknown) => {
+            configPromise = undefined;
+            throw error;
+        });
         return configPromise;
     };
 };

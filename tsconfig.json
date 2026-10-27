@@ -1,19 +1,13 @@
 {
     "extends": "@tsconfig/node22/tsconfig.json",
     "compilerOptions": {
-        "types": [
-            "node"
-        ],
-        "noImplicitAny": true,
-        "strictNullChecks": true,
+        "types": ["node"],
         "sourceMap": true,
         "declaration": true,
         "strict": true,
+        "verbatimModuleSyntax": true,
         "resolveJsonModule": true,
         "outDir": "lib"
     },
-    "include": [
-        "src/**/*",
-        "test/**/*"
-    ]
+    "include": ["src/**/*", "test/**/*"]
 }
