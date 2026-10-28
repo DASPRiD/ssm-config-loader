@@ -65,7 +65,7 @@
     },
     "peerDependencies": {
         "@aws-sdk/client-ssm": "^3.46.0",
-        "zod": "^4.4.3"
+        "zod": "^4.0.0"
     },
     "peerDependenciesMeta": {
         "zod": {

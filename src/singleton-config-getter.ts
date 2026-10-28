@@ -30,6 +30,7 @@ export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
             try {
                 rawConfig = await loadSsmConfig(ssm, prefix);
             } catch (error) {
+                configPromise = undefined;
                 throw new ConfigError("Config loading failed", error);
             }
 
@@ -38,10 +39,7 @@ export const createSingletonConfigGetter = <T extends z.ZodType<unknown>>(
             } catch (error) {
                 throw new ConfigError("Config validation failed", error);
             }
-        })().catch((error: unknown) => {
-            configPromise = undefined;
-            throw error;
-        });
+        })();
         return configPromise;
     };
 };

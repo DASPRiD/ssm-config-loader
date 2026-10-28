@@ -15,10 +15,10 @@ structure. It additionally supports loading the config from a local file, which 
 - If you want to use the [convenience helper](#convenience-helper), also install zod 4, which is an optional peer
   dependency:
 
-  `npm install zod`
+  `npm install zod@^4`
 
-This package is ESM-only and requires Node.js 22 or later. It cannot be loaded with `require()` from a CommonJS module,
-so use `import` (or a dynamic `import()`) instead.
+This package is ESM-only and requires Node.js 22 or later. CommonJS consumers can still `require()` it on Node 22.12
+and later, where `require(esm)` is enabled by default; on Node 22.0 through 22.11 use a dynamic `import()` instead.
 
 ## Quick Start
 
@@ -88,7 +88,6 @@ export const getConfig = async (): Promise<Config> => {
     configPromise = (async () => {
         return configSchema.parse(await loadSsmConfig(new SSM({}), process.env.SSM_PREFIX));
     })().catch((error: unknown) => {
-        // Don't cache a failed load, so the next call can retry.
         configPromise = undefined;
         throw error;
     });
@@ -121,4 +120,4 @@ export const getConfig = createSingletonConfigGetter(
 
 In case either loading the config or the validation fails, the getter will throw a `ConfigError` from the same module,
 with the underlying error available as its standard `cause` property. A failed load is not cached, so the next call
-to the getter will try again.
+retries it. A validation failure is cached, since a schema that rejected the config will keep rejecting it.

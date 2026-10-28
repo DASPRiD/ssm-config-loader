@@ -1,7 +1,6 @@
 {
     "extends": "@tsconfig/node22/tsconfig.json",
     "compilerOptions": {
-        "types": ["node"],
         "sourceMap": true,
         "declaration": true,
         "strict": true,
