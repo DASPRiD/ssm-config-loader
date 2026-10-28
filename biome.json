@@ -6,7 +6,17 @@
         "useIgnoreFile": true
     },
     "files": {
-        "ignoreUnknown": false
+        "ignoreUnknown": false,
+        "includes": [
+            "biome.json",
+            "package.json",
+            "tsconfig.json",
+            "tsconfig.build.json",
+            ".c8rc.json",
+            ".mocharc.json",
+            "src/**/*",
+            "test/**/*"
+        ]
     },
     "formatter": {
         "indentStyle": "space",
