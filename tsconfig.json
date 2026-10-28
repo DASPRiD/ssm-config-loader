@@ -1,17 +1,12 @@
 {
-    "extends": "@tsconfig/node14/tsconfig.json",
+    "extends": "@tsconfig/node22/tsconfig.json",
     "compilerOptions": {
-        "noImplicitAny": true,
-        "strictNullChecks": true,
-        "importsNotUsedAsValues": "error",
         "sourceMap": true,
         "declaration": true,
         "strict": true,
+        "verbatimModuleSyntax": true,
         "resolveJsonModule": true,
         "outDir": "lib"
     },
-    "include": [
-        "src/**/*",
-        "test/**/*"
-    ]
+    "include": ["src/**/*", "test/**/*"]
 }

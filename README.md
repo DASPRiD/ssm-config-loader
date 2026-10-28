@@ -12,14 +12,22 @@ structure. It additionally supports loading the config from a local file, which 
 
   `npm install ssm-config-loader`
 
+- If you want to use the [convenience helper](#convenience-helper), also install zod 4, which is an optional peer
+  dependency:
+
+  `npm install zod@^4`
+
+This package is ESM-only and requires Node.js 22 or later. CommonJS consumers can still `require()` it on Node 22.12
+and later, where `require(esm)` is enabled by default; on Node 22.0 through 22.11 use a dynamic `import()` instead.
+
 ## Quick Start
 
 To load a configuration from SSM, you only have to create an SSM client (v3) and supply it to the loader together with
 a prefix:
 
 ```typescript
-import {SSM} from '@aws-sdk/client-ssm';
-import {loadSsmConfig} from 'ssm-config-loader';
+import { SSM } from "@aws-sdk/client-ssm";
+import { loadSsmConfig } from "ssm-config-loader";
 
 const config = await loadSsmConfig(new SSM({}), process.env.SSM_PREFIX);
 ```
@@ -40,17 +48,15 @@ you get the correct values back from it. An easy way to accomplish this is by ut
 
 
 ```typescript
-import {SSM} from '@aws-sdk/client-ssm';
-import {loadSsmConfig} from 'ssm-config-loader';
-import {z} from 'zod';
+import { SSM } from "@aws-sdk/client-ssm";
+import { loadSsmConfig } from "ssm-config-loader";
+import { z } from "zod";
 
 const configSchema = z.object({
-    endpoint: z.string().url(),
+    endpoint: z.url(),
 });
 
-const config = configSchema.parse(
-    await loadSsmConfig(new SSM({}), process.env.SSM_PREFIX)
-);
+const config = configSchema.parse(await loadSsmConfig(new SSM({}), process.env.SSM_PREFIX));
 ```
 
 Now you can be certain that the config is complete and all values are in the format you expect. Additionally, your
@@ -62,28 +68,30 @@ As you probably don't want to load the config every time some component needs ac
 create a singleton function to always return the same value once it was retrieved. This could look something like this:
 
 ```typescript
-import {SSM} from '@aws-sdk/client-ssm';
-import {loadSsmConfig} from 'ssm-config-loader';
-import {z} from 'zod';
+import { SSM } from "@aws-sdk/client-ssm";
+import { loadSsmConfig } from "ssm-config-loader";
+import { z } from "zod";
 
 const configSchema = z.object({
-    endpoint: z.string().url(),
+    endpoint: z.url(),
 });
 
 export type Config = z.infer<typeof configSchema>;
 
-let configPromise : Promise<Config>;
+let configPromise: Promise<Config> | undefined;
 
-export const getConfig = async () : Promise<Config> => {
+export const getConfig = async (): Promise<Config> => {
     if (configPromise) {
         return configPromise;
     }
-    
-    return configPromise = (async () => {
-        return configSchema.parse(await loadSsmConfig(
-            new SSM({}), process.env.SSM_PREFIX)
-        );  
-    })();
+
+    configPromise = (async () => {
+        return configSchema.parse(await loadSsmConfig(new SSM({}), process.env.SSM_PREFIX));
+    })().catch((error: unknown) => {
+        configPromise = undefined;
+        throw error;
+    });
+    return configPromise;
 };
 ```
 
@@ -93,12 +101,12 @@ This library also comes with an opinionated convenience helper which will automa
 with built-in schema validation via zod. This removes a lot of boilerplate code you have to write in your projects:
 
 ```typescript
-import {SSM} from '@aws-sdk/client-ssm';
-import {createSingletonConfigGetter} from 'ssm-config-loader/lib/singleton-config-getter';
-import {z} from 'zod';
+import { SSM } from "@aws-sdk/client-ssm";
+import { createSingletonConfigGetter } from "ssm-config-loader/singleton-config-getter";
+import { z } from "zod";
 
 const configSchema = z.object({
-    endpoint: z.string().url(),
+    endpoint: z.url(),
 });
 
 export type Config = z.infer<typeof configSchema>;
@@ -106,8 +114,10 @@ export type Config = z.infer<typeof configSchema>;
 export const getConfig = createSingletonConfigGetter(
     new SSM({}),
     configSchema,
-    process.env.SSM_PREFIX
+    process.env.SSM_PREFIX,
 );
 ```
 
-In case either loading the config or the validation fails, the getter will throw a `ConfigError` from the same file.
+In case either loading the config or the validation fails, the getter will throw a `ConfigError` from the same module,
+with the underlying error available as its standard `cause` property. A failed load is not cached, so the next call
+retries it. A validation failure is cached, since a schema that rejected the config will keep rejecting it.

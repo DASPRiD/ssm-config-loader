@@ -1,46 +1,84 @@
-import {SSM} from '@aws-sdk/client-ssm';
-import chai, {expect} from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import 'mocha';
-import {createSandbox} from 'sinon';
-import {z} from 'zod';
-import {createSingletonConfigGetter} from '../src/singleton-config-getter';
+import { SSM } from "@aws-sdk/client-ssm";
+import { expect, use } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import "mocha";
+import { createSandbox } from "sinon";
+import { z } from "zod";
+import { ConfigError, createSingletonConfigGetter } from "../src/singleton-config-getter.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
-describe('singleton-config-getter', () => {
+describe("singleton-config-getter", () => {
     const sandbox = createSandbox();
 
     afterEach(() => {
         sandbox.restore();
     });
 
-    it('should throw error when loading fails', async () => {
+    it("should throw error when loading fails", async () => {
         const schema = z.object({});
         const ssm = sandbox.createStubInstance(SSM, {
             // @ts-expect-error TypeScript complains about parameter types not matching
-            getParametersByPath: sandbox.stub().returns(Promise.reject('failure')),
+            getParametersByPath: sandbox.stub().returns(Promise.reject("failure")),
         });
-        const getConfig = createSingletonConfigGetter(ssm, schema, '/foo');
+        const getConfig = createSingletonConfigGetter(ssm, schema, "/foo");
 
-        return expect(getConfig()).to.eventually.be.rejectedWith('Config loading failed');
+        await expect(getConfig()).to.eventually.be.rejectedWith("Config loading failed");
+        expect(ssm.getParametersByPath.called).to.be.true;
     });
 
-    it('should throw error when validation fails', async () => {
-        sandbox.stub(process, 'cwd').returns(__dirname);
+    it("should expose the original error as cause", async () => {
+        const schema = z.object({});
+        const failure = new Error("failure");
+        const ssm = sandbox.createStubInstance(SSM, {
+            // @ts-expect-error TypeScript complains about parameter types not matching
+            getParametersByPath: sandbox.stub().rejects(failure),
+        });
+        const getConfig = createSingletonConfigGetter(ssm, schema, "/foo");
+
+        const error = await expect(getConfig()).to.be.rejectedWith(
+            ConfigError,
+            "Config loading failed: failure",
+        );
+        expect(error.cause).to.equal(failure);
+    });
+
+    it("should retry loading after a failure", async () => {
         const schema = z.object({
-            foo: z.literal('invalid'),
+            foo: z.literal("bar"),
+        });
+        const getParametersByPath = sandbox.stub();
+        getParametersByPath.onFirstCall().rejects(new Error("Rate exceeded"));
+        getParametersByPath.onSecondCall().resolves({
+            $metadata: {},
+            Parameters: [{ Name: "/foo/foo", Value: "bar" }],
+        });
+        const ssm = sandbox.createStubInstance(SSM, {
+            // @ts-expect-error TypeScript complains about parameter types not matching
+            getParametersByPath,
+        });
+        const getConfig = createSingletonConfigGetter(ssm, schema, "/foo");
+
+        await expect(getConfig()).to.eventually.be.rejectedWith("Config loading failed");
+        await expect(getConfig()).to.eventually.eql({ foo: "bar" });
+        expect(getParametersByPath.calledTwice).to.be.true;
+    });
+
+    it("should throw error when validation fails", async () => {
+        sandbox.stub(process, "cwd").returns(import.meta.dirname);
+        const schema = z.object({
+            foo: z.literal("invalid"),
         });
         const ssm = sandbox.createStubInstance(SSM);
         const getConfig = createSingletonConfigGetter(ssm, schema);
 
-        return expect(getConfig()).to.eventually.be.rejectedWith('Config validation failed');
+        return expect(getConfig()).to.eventually.be.rejectedWith("Config validation failed");
     });
 
-    it('should return the same result when executed twice', async () => {
-        sandbox.stub(process, 'cwd').returns(__dirname);
+    it("should return the same result when executed twice", async () => {
+        sandbox.stub(process, "cwd").returns(import.meta.dirname);
         const schema = z.object({
-            foo: z.literal('bar'),
+            foo: z.literal("bar"),
         });
         const ssm = sandbox.createStubInstance(SSM);
         const getConfig = createSingletonConfigGetter(ssm, schema);
