@@ -31,7 +31,7 @@
         "prepare": "husky",
         "prepublishOnly": "npm test && npm run lint && npm run build",
         "preversion": "npm run lint",
-        "version": "npm run lint:fix && git add -A",
+        "version": "npm run lint:fix && git add -u",
         "postversion": "git push && git push --tags"
     },
     "keywords": [

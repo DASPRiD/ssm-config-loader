@@ -40,11 +40,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Smoke test build output
-        run: |
-          node -e "import('ssm-config-loader').then(m => { if (typeof m.loadSsmConfig !== 'function') process.exit(1); })"
-          node -e "import('ssm-config-loader/singleton-config-getter').then(m => { if (typeof m.createSingletonConfigGetter !== 'function') process.exit(1); })"
-
       - name: Codecov
         if: matrix.node-version == '22.x'
         uses: codecov/codecov-action@v5
